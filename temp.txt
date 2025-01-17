@@ -1,0 +1,292 @@
+import { useState } from 'react';
+import { ChevronDown, ChevronRight, Info, X } from 'lucide-react';
+
+type PersonInfo = {
+  id: string;
+  name: string;
+  title: string;
+  department: string;
+  email: string;
+  yearsOfService: number;
+  skills: string[];
+  bio: string;
+};
+
+type TreeNode = {
+  id: string;
+  name: string;
+  info: PersonInfo;
+  children?: TreeNode[];
+};
+
+// Sample data with detailed information
+const initialTree: TreeNode = {
+  id: '1',
+  name: "John Smith",
+  info: {
+    id: '1',
+    name: "John Smith",
+    title: "Chief Executive Officer",
+    department: "Executive",
+    email: "john.smith@company.com",
+    yearsOfService: 12,
+    skills: ["Strategic Planning", "Leadership", "Business Development"],
+    bio: "John has led the company through significant growth over the past decade, focusing on innovation and market expansion."
+  },
+  children: [
+    {
+      id: '2',
+      name: "Sarah Chen",
+      info: {
+        id: '2',
+        name: "Sarah Chen",
+        title: "Chief Technology Officer",
+        department: "Technology",
+        email: "sarah.chen@company.com",
+        yearsOfService: 8,
+        skills: ["Software Architecture", "AI/ML", "Team Leadership"],
+        bio: "Sarah drives technological innovation and leads our engineering teams across multiple products."
+      },
+      children: [
+        {
+          id: '5',
+          name: "Alex Kumar",
+          info: {
+            id: '5',
+            name: "Alex Kumar",
+            title: "Tech Lead",
+            department: "Engineering",
+            email: "alex.kumar@company.com",
+            yearsOfService: 5,
+            skills: ["Full Stack Development", "System Design", "Mentorship"],
+            bio: "Alex leads the core platform team and mentors junior developers."
+          }
+        }
+      ]
+    },
+    {
+      id: '3',
+      name: "Michael Park",
+      info: {
+        id: '3',
+        name: "Michael Park",
+        title: "Chief Financial Officer",
+        department: "Finance",
+        email: "michael.park@company.com",
+        yearsOfService: 7,
+        skills: ["Financial Planning", "Risk Management", "Investment Strategy"],
+        bio: "Michael oversees all financial operations and strategic planning initiatives."
+      },
+      children: [
+        {
+          id: '6',
+          name: "Emma Wilson",
+          info: {
+            id: '6',
+            name: "Emma Wilson",
+            title: "Financial Controller",
+            department: "Finance",
+            email: "emma.wilson@company.com",
+            yearsOfService: 4,
+            skills: ["Financial Analysis", "Budgeting", "Compliance"],
+            bio: "Emma manages financial reporting and ensures regulatory compliance."
+          }
+        }
+      ]
+    }
+  ]
+};
+
+const InfoCard = ({ 
+  info, 
+  onClose 
+}: { 
+  info: PersonInfo; 
+  onClose: () => void;
+}) => (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+      <div className="flex justify-between items-start mb-4">
+        <div>
+          <h3 className="text-xl font-bold text-gray-900">{info.name}</h3>
+          <p className="text-gray-600">{info.title}</p>
+        </div>
+        <button
+          onClick={onClose}
+          className="p-1 hover:bg-gray-100 rounded-full"
+        >
+          <X className="text-gray-500" size={20} />
+        </button>
+      </div>
+      
+      <div className="space-y-4">
+        <div>
+          <p className="text-sm font-semibold text-gray-600">Department</p>
+          <p className="text-gray-900">{info.department}</p>
+        </div>
+        
+        <div>
+          <p className="text-sm font-semibold text-gray-600">Contact</p>
+          <p className="text-gray-900">{info.email}</p>
+        </div>
+        
+        <div>
+          <p className="text-sm font-semibold text-gray-600">Years at Company</p>
+          <p className="text-gray-900">{info.yearsOfService} years</p>
+        </div>
+        
+        <div>
+          <p className="text-sm font-semibold text-gray-600">Skills</p>
+          <div className="flex flex-wrap gap-2 mt-1">
+            {info.skills.map((skill) => (
+              <span
+                key={skill}
+                className="px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
+              >
+                {skill}
+              </span>
+            ))}
+          </div>
+        </div>
+        
+        <div>
+          <p className="text-sm font-semibold text-gray-600">Bio</p>
+          <p className="text-gray-900 text-sm">{info.bio}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const TreeNode = ({ 
+  node,
+  level = 0,
+  parentX = 0,
+  parentY = 0,
+}: { 
+  node: TreeNode;
+  level?: number;
+  parentX?: number;
+  parentY?: number;
+}) => {
+  const [isExpanded, setIsExpanded] = useState(true);
+  const [showInfo, setShowInfo] = useState(false);
+  const [nodeRef, setNodeRef] = useState<HTMLDivElement | null>(null);
+  
+  const hasChildren = node.children && node.children.length > 0;
+  const nodeWidth = 200;
+  const nodeHeight = 60;
+  const levelHeight = 120;
+  
+  const renderDiagonalPath = (startX: number, startY: number, endX: number, endY: number) => {
+    const midY = (startY + endY) / 2;
+    return `M ${startX} ${startY} C ${startX} ${midY}, ${endX} ${midY}, ${endX} ${endY}`;
+  };
+
+  return (
+    <div className="relative" ref={setNodeRef}>
+      {/* Node content */}
+      <div className="relative">
+        <div 
+          className={`
+            relative w-48 p-3 rounded-lg shadow-md bg-white
+            border-2 border-blue-200 hover:border-blue-400
+            transition-all duration-200
+            ${hasChildren ? 'cursor-pointer' : ''}
+          `}
+          onClick={() => hasChildren && setIsExpanded(!isExpanded)}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {hasChildren && (
+                <span className="text-blue-500">
+                  {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                </span>
+              )}
+              <span className="font-medium text-gray-800">{node.name}</span>
+            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowInfo(true);
+              }}
+              className="p-1 hover:bg-blue-50 rounded-full"
+            >
+              <Info size={16} className="text-blue-500" />
+            </button>
+          </div>
+          <div className="text-sm text-gray-600 mt-1 ml-6">
+            {node.info.title}
+          </div>
+        </div>
+      </div>
+
+      {/* Info Modal */}
+      {showInfo && (
+        <InfoCard
+          info={node.info}
+          onClose={() => setShowInfo(false)}
+        />
+      )}
+
+      {/* Children nodes */}
+      {hasChildren && isExpanded && nodeRef && (
+        <div className="flex flex-row gap-8 mt-16">
+          {node.children.map((child, index) => {
+            const startX = nodeRef.offsetLeft + nodeWidth / 2;
+            const startY = nodeRef.offsetTop + nodeHeight;
+            const childX = nodeRef.offsetLeft + (index - (node.children!.length - 1) / 2) * (nodeWidth + 32);
+            const childY = nodeRef.offsetTop + levelHeight;
+
+            return (
+              <div key={child.id} className="relative" style={{ marginLeft: index === 0 ? '0' : '2rem' }}>
+                <svg
+                  className="absolute pointer-events-none"
+                  style={{
+                    top: -nodeHeight,
+                    left: -nodeWidth / 2,
+                    width: Math.abs(childX - startX) + nodeWidth,
+                    height: levelHeight
+                  }}
+                >
+                  <path
+                    d={renderDiagonalPath(
+                      startX - (childX - nodeWidth / 2),
+                      0,
+                      nodeWidth / 2,
+                      levelHeight - nodeHeight
+                    )}
+                    stroke="#CBD5E1"
+                    strokeWidth="2"
+                    fill="none"
+                  />
+                </svg>
+                <TreeNode
+                  node={child}
+                  level={level + 1}
+                  parentX={startX}
+                  parentY={startY}
+                />
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const TreeVisualization = () => {
+  return (
+    <div className="p-8 max-w-6xl mx-auto bg-gray-50 rounded-xl shadow-lg">
+      <h2 className="text-2xl font-bold text-gray-800 mb-8 text-center">Organization Chart</h2>
+      <div className="overflow-x-auto">
+        <div className="min-w-max p-8">
+          <TreeNode node={initialTree} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TreeVisualization;
