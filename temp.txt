@@ -1,157 +1,15 @@
-import React, { useState } from 'react';
-import Tree from 'react-d3-tree';
-import { Info, X } from 'lucide-react';
-
-type PersonInfo = {
-  name: string;
-  title: string;
-  department: string;
-  email: string;
-  yearsOfService: number;
-  skills: string[];
-  bio: string;
+type CustomNodeProps = {
+  nodeDatum: CustomNodeData; // Explicitly type nodeDatum
+  onNodeClick?: (node: CustomNodeData) => void; // Optional onNodeClick handler
 };
 
-// Custom node data type
-type CustomNodeData = {
-  name: string;
-  info: PersonInfo;
-};
-
-const orgChartData = {
-  name: 'John Smith',
-  info: {
-    name: "John Smith",
-    title: "Chief Executive Officer",
-    department: "Executive",
-    email: "john.smith@company.com",
-    yearsOfService: 12,
-    skills: ["Strategic Planning", "Leadership", "Business Development"],
-    bio: "John has led the company through significant growth over the past decade, focusing on innovation and market expansion."
-  },
-  children: [
-    {
-      name: 'Sarah Chen',
-      info: {
-        name: "Sarah Chen",
-        title: "Chief Technology Officer",
-        department: "Technology",
-        email: "sarah.chen@company.com",
-        yearsOfService: 8,
-        skills: ["Software Architecture", "AI/ML", "Team Leadership"],
-        bio: "Sarah drives technological innovation and leads our engineering teams across multiple products."
-      },
-      children: [
-        {
-          name: 'Alex Kumar',
-          info: {
-            name: "Alex Kumar",
-            title: "Tech Lead",
-            department: "Engineering",
-            email: "alex.kumar@company.com",
-            yearsOfService: 5,
-            skills: ["Full Stack Development", "System Design", "Mentorship"],
-            bio: "Alex leads the core platform team and mentors junior developers."
-          }
-        }
-      ]
-    },
-    {
-      name: 'Michael Park',
-      info: {
-        name: "Michael Park",
-        title: "Chief Financial Officer",
-        department: "Finance",
-        email: "michael.park@company.com",
-        yearsOfService: 7,
-        skills: ["Financial Planning", "Risk Management", "Investment Strategy"],
-        bio: "Michael oversees all financial operations and strategic planning initiatives."
-      },
-      children: [
-        {
-          name: 'Emma Wilson',
-          info: {
-            name: "Emma Wilson",
-            title: "Financial Controller",
-            department: "Finance",
-            email: "emma.wilson@company.com",
-            yearsOfService: 4,
-            skills: ["Financial Analysis", "Budgeting", "Compliance"],
-            bio: "Emma manages financial reporting and ensures regulatory compliance."
-          }
-        }
-      ]
-    }
-  ]
-};
-
-const InfoCard = ({ 
-  info, 
-  onClose 
-}: { 
-  info: PersonInfo; 
-  onClose: () => void;
-}) => (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-    <div className="bg-white rounded-lg shadow-xl p-4 md:p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-      <div className="flex justify-between items-start mb-4">
-        <div>
-          <h3 className="text-lg md:text-xl font-bold text-gray-900">{info.name}</h3>
-          <p className="text-sm md:text-base text-gray-600">{info.title}</p>
-        </div>
-        <button
-          onClick={onClose}
-          className="p-1 hover:bg-gray-100 rounded-full"
-        >
-          <X className="text-gray-500" size={20} />
-        </button>
-      </div>
-      
-      <div className="space-y-4">
-        <div>
-          <p className="text-sm font-semibold text-gray-600">Department</p>
-          <p className="text-sm md:text-base text-gray-900">{info.department}</p>
-        </div>
-        
-        <div>
-          <p className="text-sm font-semibold text-gray-600">Contact</p>
-          <p className="text-sm md:text-base text-gray-900 break-words">{info.email}</p>
-        </div>
-        
-        <div>
-          <p className="text-sm font-semibold text-gray-600">Years at Company</p>
-          <p className="text-sm md:text-base text-gray-900">{info.yearsOfService} years</p>
-        </div>
-        
-        <div>
-          <p className="text-sm font-semibold text-gray-600">Skills</p>
-          <div className="flex flex-wrap gap-2 mt-1">
-            {info.skills.map((skill) => (
-              <span
-                key={skill}
-                className="px-2 py-1 bg-blue-100 text-blue-800 text-xs md:text-sm rounded-full"
-              >
-                {skill}
-              </span>
-            ))}
-          </div>
-        </div>
-        
-        <div>
-          <p className="text-sm font-semibold text-gray-600">Bio</p>
-          <p className="text-sm md:text-base text-gray-900">{info.bio}</p>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-const CustomNode = ({ nodeDatum, onNodeClick }: any) => {
+const CustomNode: React.FC<CustomNodeProps> = ({ nodeDatum, onNodeClick }) => {
   const [showInfo, setShowInfo] = useState(false);
-  
+
   return (
     <>
       <g>
+        {/* Node Rectangle */}
         <rect
           x="-100"
           y="-25"
@@ -163,6 +21,7 @@ const CustomNode = ({ nodeDatum, onNodeClick }: any) => {
           strokeWidth="2"
           className="shadow-md"
         />
+        {/* Node Name */}
         <text
           fill="currentColor"
           x="0"
@@ -172,15 +31,19 @@ const CustomNode = ({ nodeDatum, onNodeClick }: any) => {
         >
           {nodeDatum.name}
         </text>
-        <text
-          fill="#666"
-          x="0"
-          y="15"
-          textAnchor="middle"
-          className="text-xs"
-        >
-          {nodeDatum.info.title}
-        </text>
+        {/* Node Title */}
+        {nodeDatum.info?.title && (
+          <text
+            fill="#666"
+            x="0"
+            y="15"
+            textAnchor="middle"
+            className="text-xs"
+          >
+            {nodeDatum.info.title}
+          </text>
+        )}
+        {/* Info Circle */}
         <circle
           cx="85"
           cy="-15"
@@ -200,7 +63,8 @@ const CustomNode = ({ nodeDatum, onNodeClick }: any) => {
           i
         </text>
       </g>
-      {showInfo && (
+      {/* Info Card */}
+      {showInfo && nodeDatum.info && (
         <InfoCard
           info={nodeDatum.info}
           onClose={() => setShowInfo(false)}
@@ -209,49 +73,3 @@ const CustomNode = ({ nodeDatum, onNodeClick }: any) => {
     </>
   );
 };
-
-const OrgTree = () => {
-  const [translate, setTranslate] = useState({ x: 0, y: 0 });
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-
-  // Update dimensions on mount and window resize
-  React.useEffect(() => {
-    const updateDimensions = () => {
-      setDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight
-      });
-      setTranslate({
-        x: window.innerWidth / 2,
-        y: window.innerHeight / 6
-      });
-    };
-
-    updateDimensions();
-    window.addEventListener('resize', updateDimensions);
-    return () => window.removeEventListener('resize', updateDimensions);
-  }, []);
-
-  return (
-    <div className="h-screen w-full bg-gray-50">
-      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-10">
-        <h2 className="text-2xl font-bold text-gray-800">Organization Chart</h2>
-      </div>
-      <div className="w-full h-full">
-        <Tree
-          data={orgChartData}
-          translate={translate}
-          orientation="vertical"
-          renderCustomNodeElement={CustomNode}
-          pathFunc="step"
-          separation={{ siblings: 2, nonSiblings: 2.5 }}
-          nodeSize={{ x: 240, y: 100 }}
-          zoomable={true}
-          pathClassFunc={() => 'stroke-gray-300 stroke-2'}
-        />
-      </div>
-    </div>
-  );
-};
-
-export default OrgTree;
